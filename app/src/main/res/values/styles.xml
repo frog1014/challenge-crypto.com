@@ -1,0 +1,28 @@
+<resources>
+
+    <!-- To see how these attributes are used, please visit https://material.io/develop/android/theming/color/ -->
+    <style name="Base.Theme.MyWork" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/my_main</item>
+        <item name="colorOnPrimary">@color/my_green_700</item>
+        <item name="colorPrimaryDark">@color/my_main_dark</item>
+        <item name="colorOnSurface">@color/my_black</item>
+        <item name="colorAccent">@color/my_green_700</item>
+        <item name="colorSurface">@color/my_gray_50</item>
+        <item name="colorSecondary">@color/my_green_700</item>
+        <item name="android:colorBackground">@color/my_black</item>
+    </style>
+
+    <style name="Theme.MyWork" parent="Base.Theme.MyWork" />
+
+    <style name="Theme.MyWork.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.MyWork.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
+
+    <style name="TextAppearance.MyWork.Toolbar.Text" parent="TextAppearance.MaterialComponents.Headline5">
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+</resources>

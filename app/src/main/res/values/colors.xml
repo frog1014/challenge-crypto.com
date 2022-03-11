@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="my_black">#de000000</color>
+    <color name="my_gray">#737373</color>
+    <color name="my_gray_50">#fafafa</color>
+    <color name="my_gray_50_a600">#99fafafa</color>
+    <color name="my_green_300">#6dc790</color>
+    <color name="my_green_500">#49bb79</color>
+    <color name="my_green_700">#005d2b</color>
+    <color name="my_green_900">#1a231e</color>
+    <color name="my_white">#deffffff</color>
+    <color name="my_main">#061121</color>
+    <color name="my_main_dark">#051121</color>
+    <color name="my_item_bg">#133364</color>
+    <color name="my_yellow_300">#f8f99f</color>
+    <color name="my_yellow_500">#ffff63</color>
+</resources>

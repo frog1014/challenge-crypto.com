@@ -1,0 +1,18 @@
+<resources>
+
+    <string name="app_name" translatable="false">Crypto.com challenge</string>
+
+    <!-- Accessibility -->
+    <string name="select_a_currency">Select a currency</string>
+    <string name="default_amount">1.00</string>
+    <string name="load_data">Load data</string>
+    <string name="data_was_loaded">Data was loaded</string>
+    <string name="data_loader_running">Data loader is running</string>
+    <string name="input_amount">Input amount</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="leave_app_hint">Press back again to leave app</string>
+    <string name="fetching">Fetching</string>
+    <string name="outdate">outdate</string>
+    <string name="sort_data">Sort data</string>
+
+</resources>
