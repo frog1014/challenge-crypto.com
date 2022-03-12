@@ -3,13 +3,15 @@ package com.mywork.apps.cryptodotcom.challenge.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.mywork.apps.cryptodotcom.challenge.data.CurrencyRepository
 import com.mywork.apps.cryptodotcom.challenge.data.entity.CurrencyInfo
 import com.mywork.apps.cryptodotcom.challenge.di.DefaultDispatcher
+import com.mywork.apps.cryptodotcom.challenge.di.IoDispatcher
 import com.mywork.apps.cryptodotcom.challenge.di.ObserverCoroutineScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -17,7 +19,7 @@ class MainViewModel @Inject constructor(
     private val repository: CurrencyRepository,
     @ObserverCoroutineScope private val externalIoScope: CoroutineScope,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
-    // @IoDispatcher private val ioDispatcher: CoroutineDispatcher
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     private val _listView by lazy { MutableLiveData<ListResult>() }
@@ -36,55 +38,51 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private var loadDataJob: Job? = null
-    private var sortDataJob: Job? = null
+    private val workerFlow = MutableSharedFlow<Flow<List<CurrencyInfo>>>()
     val selectedCurrency: LiveData<CurrencyInfo> get() = _selectedCurrency
     val listView: LiveData<ListResult> get() = _listView
 
-    fun loadData() {
-        clearAllJob()
-
-        loadDataJob = externalIoScopeWithExceptionHandler.launch {
-            repository.getAllCurrenciesFlow()
+    init {
+        externalDefaultScopeWithExceptionHandler.launch {
+            workerFlow
+                .flatMapLatest {
+                    it
+                }
+                .catch {
+                    _listView.postValue(ListResult.Failed(it.message))
+                }
                 .collectLatest {
                     // for long running test
-                    // delay(2000L)
-
+                    // delay(3000L)
                     _listView.postValue(ListResult.Success(it))
                 }
         }
     }
 
-    private fun clearAllJob() {
-        loadDataJob?.cancel()
-        loadDataJob = null
-        sortDataJob?.cancel()
-        sortDataJob = null
+    private fun getSortDataFlow() = flow {
+        val data = (listView.value as? ListResult.Success)?.data
+        data
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { emit(sorted(it)) }
     }
 
-    private fun isDataValid() = (listView.value as? ListResult.Success)?.data?.isNotEmpty() == true
+    fun loadData() {
+        val worker = repository.getAllCurrenciesFlow().flowOn(ioDispatcher)
+        emitWorker(worker)
+    }
+
     fun sortData() {
-        val isDataValid = isDataValid()
+        val worker = getSortDataFlow().flowOn(defaultDispatcher)
+        emitWorker(worker)
+    }
 
-        // avoid cancels the first time for preparing data
-        if (loadDataJob?.isActive == true && !isDataValid) return
-
-        clearAllJob()
-
-        if (!isDataValid) return
-
-        sortDataJob = externalDefaultScopeWithExceptionHandler.launch {
-            val data = (listView.value as ListResult.Success).data
-            val sortedList = sort(data)
-
-            // for long running test
-            // delay(3000L)
-
-            _listView.postValue(ListResult.Success(sortedList))
+    private fun emitWorker(worker: Flow<List<CurrencyInfo>>) {
+        externalDefaultScopeWithExceptionHandler.launch {
+            workerFlow.emit(worker)
         }
     }
 
-    private fun sort(list: List<CurrencyInfo>): List<CurrencyInfo> = list.sortedBy {
+    private fun sorted(list: List<CurrencyInfo>): List<CurrencyInfo> = list.sortedBy {
         // for easy to observe the list changed
         // when (System.currentTimeMillis() % 3) {
         //     1L -> it.name
@@ -95,7 +93,6 @@ class MainViewModel @Inject constructor(
     }
 
     override fun onCleared() {
-        clearAllJob()
         externalIoScope.cancel()
         super.onCleared()
     }
